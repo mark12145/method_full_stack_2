@@ -6,6 +6,7 @@ class RoomPriceUpdater {
     this.storageKey = 'methodsRoomPrices';
     this.roomStorageKey = `${roomType}RoomPrices`;
     this.updateInterval = null;
+    this.broadcastChannel = null;
     this.init();
   }
 
@@ -20,13 +21,18 @@ class RoomPriceUpdater {
     
     // Start periodic checking
     this.startPeriodicCheck();
+    
+    // Initialize broadcast channel for modern browsers
+    this.initBroadcastChannel();
   }
 
   setupEventListeners() {
     // Listen for storage changes (cross-tab updates)
     window.addEventListener('storage', (e) => {
-      if (e.key === this.roomStorageKey || e.key === this.storageKey) {
-        console.log(`Storage change detected for ${this.roomType}`);
+      if (e.key === this.roomStorageKey || 
+          e.key === this.storageKey || 
+          (e.key && e.key.startsWith(`priceUpdateTrigger_${this.roomType}`))) {
+        console.log(`Storage change detected for ${this.roomType}:`, e.key);
         this.updatePricesOnPage();
       }
     });
@@ -34,7 +40,7 @@ class RoomPriceUpdater {
     // Listen for custom price update events (same-tab updates)
     window.addEventListener('priceUpdate', (e) => {
       if (e.detail.roomType === this.roomType) {
-        console.log(`Price update event received for ${this.roomType}`);
+        console.log(`Price update event received for ${this.roomType}:`, e.detail);
         this.updatePricesFromEvent(e.detail);
       }
     });
@@ -42,29 +48,86 @@ class RoomPriceUpdater {
     // Listen for page visibility changes
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
-        // Page became visible, check for updates
+        // Page became visible, check for updates immediately
+        console.log('Page became visible, checking for updates');
         this.checkForUpdates();
       }
     });
+
+    // Listen for focus events
+    window.addEventListener('focus', () => {
+      console.log('Window focused, checking for updates');
+      this.checkForUpdates();
+    });
+  }
+
+  initBroadcastChannel() {
+    if ('BroadcastChannel' in window) {
+      try {
+        this.broadcastChannel = new BroadcastChannel('methodsPriceUpdates');
+        this.broadcastChannel.addEventListener('message', (event) => {
+          if (event.data.roomType === this.roomType) {
+            console.log(`BroadcastChannel message received for ${this.roomType}:`, event.data);
+            this.updatePricesFromEvent(event.data);
+          }
+        });
+      } catch (error) {
+        console.warn('BroadcastChannel not available:', error);
+      }
+    }
   }
 
   startPeriodicCheck() {
-    // Check for updates every 3 seconds
+    // Check for updates every 1 second for faster response
     this.updateInterval = setInterval(() => {
       this.checkForUpdates();
-    }, 3000);
+    }, 1000);
   }
 
   checkForUpdates() {
     try {
+      // Check room-specific storage
       const roomPriceData = localStorage.getItem(this.roomStorageKey);
       if (roomPriceData) {
         const data = JSON.parse(roomPriceData);
         if (data.timestamp && data.timestamp > this.lastUpdateTimestamp) {
-          console.log(`New price data detected for ${this.roomType}`);
+          console.log(`New price data detected for ${this.roomType}:`, data);
           this.updatePricesOnPage();
           this.lastUpdateTimestamp = data.timestamp;
+          return;
         }
+      }
+
+      // Check general storage as fallback
+      const generalPriceData = localStorage.getItem(this.storageKey);
+      if (generalPriceData) {
+        const allData = JSON.parse(generalPriceData);
+        if (allData.timestamp && allData.timestamp > this.lastUpdateTimestamp) {
+          console.log(`New general price data detected for ${this.roomType}`);
+          this.updatePricesOnPage();
+          this.lastUpdateTimestamp = allData.timestamp;
+        }
+      }
+
+      // Check for trigger keys
+      const triggerKeys = Object.keys(localStorage).filter(key => 
+        key.startsWith(`priceUpdateTrigger_${this.roomType}`)
+      );
+      
+      if (triggerKeys.length > 0) {
+        console.log(`Price update trigger found for ${this.roomType}`);
+        this.updatePricesOnPage();
+        // Clean up old triggers
+        triggerKeys.forEach(key => {
+          try {
+            const triggerData = JSON.parse(localStorage.getItem(key));
+            if (triggerData.timestamp > this.lastUpdateTimestamp) {
+              this.lastUpdateTimestamp = triggerData.timestamp;
+            }
+          } catch (error) {
+            console.warn('Error parsing trigger data:', error);
+          }
+        });
       }
     } catch (error) {
       console.error('Error checking for price updates:', error);
@@ -114,6 +177,7 @@ class RoomPriceUpdater {
           const allPrices = JSON.parse(generalPriceData);
           if (allPrices.prices && allPrices.prices[this.roomType]) {
             prices = allPrices.prices[this.roomType];
+            this.lastUpdateTimestamp = allPrices.timestamp || Date.now();
           }
         }
       }
@@ -185,20 +249,24 @@ class RoomPriceUpdater {
   }
 
   updateSpanElement(selector, value) {
-    const element = document.querySelector(selector);
-    if (element) {
-      element.textContent = this.formatPrice(value);
-    }
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(element => {
+      if (element) {
+        element.textContent = this.formatPrice(value);
+      }
+    });
   }
 
   updateMainPrice(hourlyPrice) {
     if (!hourlyPrice) return;
 
     // Update the main price display
-    const priceElement = document.querySelector('.price');
-    if (priceElement) {
-      priceElement.textContent = `EGP ${this.formatPrice(hourlyPrice)} / hour`;
-    }
+    const priceElements = document.querySelectorAll('.price');
+    priceElements.forEach(element => {
+      if (element) {
+        element.textContent = `EGP ${this.formatPrice(hourlyPrice)} / hour`;
+      }
+    });
   }
 
   getDefaultPrices() {
@@ -251,7 +319,7 @@ class RoomPriceUpdater {
       max-width: 300px;
     `;
     
-    // Add animation keyframes
+    // Add animation keyframes if not already present
     if (!document.querySelector('#price-notification-styles')) {
       const style = document.createElement('style');
       style.id = 'price-notification-styles';
@@ -298,6 +366,9 @@ class RoomPriceUpdater {
   destroy() {
     if (this.updateInterval) {
       clearInterval(this.updateInterval);
+    }
+    if (this.broadcastChannel) {
+      this.broadcastChannel.close();
     }
     window.removeEventListener('storage', this.handleStorageChange);
     window.removeEventListener('priceUpdate', this.handlePriceUpdate);

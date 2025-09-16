@@ -135,10 +135,10 @@ class AdminPanel {
           // Save to localStorage with proper structure
           this.savePriceData();
           
-          // Update room pages immediately
+          // Update room pages immediately with enhanced broadcasting
           this.updateRoomPages(roomType, roomPrices);
           
-          // Trigger cross-tab updates
+          // Enhanced cross-tab and real-time updates
           this.broadcastPriceUpdate(roomType, roomPrices);
           
           this.showSuccess(`${this.getRoomDisplayName(roomType)} prices updated successfully!`);
@@ -153,7 +153,7 @@ class AdminPanel {
         btn.classList.remove('loading');
         btn.textContent = 'Update Prices';
       }
-    }, 800);
+    }, 500); // Reduced delay for faster updates
   }
 
   saveAllChanges() {
@@ -207,7 +207,7 @@ class AdminPanel {
         saveBtn.classList.remove('loading');
         saveBtn.textContent = 'Save All Changes';
       }
-    }, 1500);
+    }, 800);
   }
 
   resetToDefaults() {
@@ -221,7 +221,7 @@ class AdminPanel {
       // Save to storage
       this.savePriceData();
       
-      // Update all room pages
+      // Update all room pages with enhanced broadcasting
       Object.keys(this.priceData).forEach(roomType => {
         this.updateRoomPages(roomType, this.priceData[roomType]);
         this.broadcastPriceUpdate(roomType, this.priceData[roomType]);
@@ -294,31 +294,56 @@ class AdminPanel {
   }
 
   broadcastPriceUpdate(roomType, roomPrices) {
-    // Create custom event for same-window updates
-    const updateEvent = new CustomEvent('priceUpdate', {
-      detail: {
-        roomType: roomType,
-        prices: roomPrices,
-        timestamp: Date.now(),
-        source: 'admin'
-      }
-    });
-    window.dispatchEvent(updateEvent);
-
-    // Trigger storage event for cross-tab communication
-    const storageData = {
-      ...roomPrices,
-      lastUpdated: new Date().toISOString(),
-      timestamp: Date.now(),
+    const timestamp = Date.now();
+    const updateData = {
       roomType: roomType,
+      prices: roomPrices,
+      timestamp: timestamp,
+      source: 'admin',
+      lastUpdated: new Date().toISOString(),
       updatedBy: this.getAdminUsername()
     };
 
-    // Force storage event by removing and setting
+    // 1. Create custom event for same-window updates
+    const updateEvent = new CustomEvent('priceUpdate', {
+      detail: updateData
+    });
+    window.dispatchEvent(updateEvent);
+
+    // 2. Force storage event for cross-tab communication
+    const storageData = {
+      ...roomPrices,
+      ...updateData
+    };
+
+    // Clear and set to trigger storage event
     localStorage.removeItem(`${roomType}RoomPrices`);
     setTimeout(() => {
       localStorage.setItem(`${roomType}RoomPrices`, JSON.stringify(storageData));
+    }, 50);
+
+    // 3. Additional broadcast channel for modern browsers
+    if ('BroadcastChannel' in window) {
+      try {
+        const channel = new BroadcastChannel('methodsPriceUpdates');
+        channel.postMessage(updateData);
+        channel.close();
+      } catch (error) {
+        console.warn('BroadcastChannel not available:', error);
+      }
+    }
+
+    // 4. Enhanced localStorage trigger
+    setTimeout(() => {
+      const triggerKey = `priceUpdateTrigger_${roomType}_${timestamp}`;
+      localStorage.setItem(triggerKey, JSON.stringify(updateData));
+      // Clean up trigger after 5 seconds
+      setTimeout(() => {
+        localStorage.removeItem(triggerKey);
+      }, 5000);
     }, 100);
+
+    console.log(`Price update broadcasted for ${roomType}:`, updateData);
   }
 
   autoSave() {
@@ -352,7 +377,7 @@ class AdminPanel {
         this.priceData = newPriceData;
         this.savePriceData();
         
-        // Update room pages
+        // Update room pages with enhanced broadcasting
         Object.keys(this.priceData).forEach(roomType => {
           this.updateRoomPages(roomType, this.priceData[roomType]);
           this.broadcastPriceUpdate(roomType, this.priceData[roomType]);
@@ -424,7 +449,7 @@ class AdminPanel {
             this.loadCurrentPrices();
             this.savePriceData();
             
-            // Update all room pages
+            // Update all room pages with enhanced broadcasting
             Object.keys(this.priceData).forEach(roomType => {
               this.updateRoomPages(roomType, this.priceData[roomType]);
               this.broadcastPriceUpdate(roomType, this.priceData[roomType]);
@@ -513,6 +538,7 @@ class AdminPanel {
     if (successElement) {
       successElement.textContent = message;
       successElement.style.display = 'block';
+      successElement.style.color = '#28a745';
       setTimeout(() => {
         successElement.style.display = 'none';
       }, 5000);
@@ -520,7 +546,17 @@ class AdminPanel {
   }
 
   showError(message) {
-    alert(message);
+    const successElement = document.getElementById('success-message');
+    if (successElement) {
+      successElement.textContent = message;
+      successElement.style.display = 'block';
+      successElement.style.color = '#dc3545';
+      setTimeout(() => {
+        successElement.style.display = 'none';
+      }, 5000);
+    } else {
+      alert(message);
+    }
   }
 
   debounce(func, wait) {
