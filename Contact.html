@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - Methods Business Solutions</title>
+  <link rel="stylesheet" href="stylesss.css">
+  <link rel="icon" type="icon" href="iconlogo.png">
+
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <header class="navbar">
+    <div class="logo">
+      <img src="Logo.png" alt="Methods Logo">
+    </div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="SOLUTIONS.html">Solutions</a>
+      <a href="ABOUT.html">About</a>
+      <a href="offers.html">Working space</a>
+      <a href="contact.html" class="active">Contact</a>
+    </nav>
+    <button id="theme-toggle">🌙</button>
+  </header>
+
+  <!-- ===== CONTACT PAGE ===== -->
+  <section class="contact-page">
+    <h1>Contact Us</h1>
+    <p class="intro">We’d love to hear from you! Please fill out the form below and we will get back to you shortly.</p>
+
+    <form class="contact-form" id="contactForm">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" name="name" placeholder="Your name" required>
+
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" placeholder="Your email" required>
+
+      <label for="message">Message</label>
+      <textarea id="message" name="message" placeholder="Write your message here..." required></textarea>
+
+      <button type="submit" class="btn">Send Message</button>
+      <p class="form-msg" id="formMsg"></p>
+    </form>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>&copy; 2025 Methods Business Solutions. All Rights Reserved.</p>
+  </footer>
+
+  <!-- ===== JAVASCRIPT ===== -->
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+    });
+
+    const contactForm = document.getElementById('contactForm');
+    const formMsg = document.getElementById('formMsg');
+
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      formMsg.textContent = 'Thanks for contacting us! We will get back to you soon.';
+      contactForm.reset();
+    });
+  </script>
+
+</body>
+</html>

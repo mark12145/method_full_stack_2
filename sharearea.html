@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Training Hall Booking</title>
+  <link rel="icon" type="icon" href="iconlogo.png">
+
+  <link rel="stylesheet" href="styleforrooms.css">
+</head>
+<body>
+  <!-- ===== NAVBAR ===== -->
+  <header class="navbar">
+    <div class="logo">
+      <img src="Logo.png" alt="Methods Logo">
+    </div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="SOLUTIONS.html">Solutions</a>
+      <a href="OFFERS.html" class="active">Working space</a>
+      <a href="ABOUT.html">About</a>
+      <a href="CONTACT.html">Contact</a>
+    </nav>
+    <button id="theme-toggle">🌙</button>
+  </header>
+
+  <!-- =====  INFO ===== -->
+  <section class="room-details">
+  <h1>SHARE AREA</h1>
+
+  <div class="slider">
+    <img src="share_area.jpeg" alt="room 1" class="room-img">
+    <h2 class="how_many_carry" style="color: rgb(70, 61, 61); text-shadow: black 0 0 30px;">Sharing area for 3 persons</h1>
+  </div>
+
+</section>
+
+
+  <!-- ===== FACILITIES ===== -->
+  <section class="facilities">
+    <h2>Facilities Available</h2>
+    <div class="facility-grid">
+      <div class="facility">✔ Premium Location</div>
+      <div class="facility">✔ Reception & Secretarial Services</div>
+      <div class="facility">✔ Meeting Tools</div>
+      <div class="facility">✔ On-Site Printing & Copying Services</div>
+      <div class="facility">✔ High-Speed Internet</div>
+      <div class="facility">✔ Coffee Break</div>
+      <div class="facility">✔ Coffee Break Area</div>
+      <div class="facility">✔ Supportive Community</div>
+    </div>
+  </section>
+
+  <!-- ===== TIME SLOTS ===== -->
+  <section class="time-slots">
+    <h2>Booking Time</h2>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="morning">Morning / Evening</button>
+    </div>
+
+    <div class="tab-content" id="morning">
+      <h3>Share area</h3>
+      <div class="rates">
+        <div>30 hours: EGP 1500</div>
+        <div>60 hours: EGP 2700</div>
+        <div>90 hours: EGP 3500</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BOOKING FORM ===== -->
+  <section class="booking">
+    <h2>Book Your Slot</h2>
+    <form class="booking-form">
+      <label for="name">Full Name *</label>
+      <input type="text" id="name" name="name" required>
+
+      <label for="email">Email *</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="mobile">Mobile *</label>
+      <input type="tel" id="mobile" name="mobile" required>
+
+      <label for="duration">long *</label> 
+      <select id="duration" name="duration" required>
+        <option value="">-- Select --</option>
+        <option value="hourly">30 hours</option>
+        <option value="daily">60 hours</option>
+        <option value="monthly">90 hours</option>
+      </select>
+      
+      <label for="name">Start Date *</label>
+      <input type="date" id="date" name="name" required>
+
+      
+
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" rows="4" placeholder="Write any special requests..."></textarea>
+
+      <button type="submit" class="btn">Confirm Booking</button>
+    </form>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Methods Business Solutions. All Rights Reserved.</p>
+  </footer>
+
+  <!-- ===== SCRIPT ===== -->
+<script>
+  // ==============================
+  // Include room price updater
+  // ==============================
+  const script = document.createElement('script');
+  script.src = 'room-price-updater.js';
+  document.head.appendChild(script);
+
+  // ==============================
+  // Dark/Light Mode
+  // ==============================
+
+</script>
+
+</body>
+</html>

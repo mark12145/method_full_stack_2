@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Methods Business Solutions</title>
+  <link rel="stylesheet" href="admin-s.css">
+  <link rel="icon" type="icon" href="iconlogo.png">
+</head>
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <div class="logo">
+        <img src="Logo.png" alt="Methods Logo">
+      </div>
+      <div class="admin-nav">
+        <span id="admin-welcome">Welcome, Admin</span>
+        <button id="logout-btn" class="btn-logout">Logout</button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <h1>Room Price Management</h1>
+      
+      <div class="rooms-grid">
+        <!-- Training Hall -->
+        <div class="room-card">
+          <img src="rom1.jpeg" alt="Training Hall">
+          <h2>AMOUN ROOM</h2>
+          <div class="price-section">
+            <h3>Morning Rates</h3>
+            <div class="price-input-group">
+              <label>Hourly Rate (EGP)</label>
+              <input type="number" id="training-morning-hourly" value="100" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Daily Rate (EGP)</label>
+              <input type="number" id="training-morning-daily" value="800" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Monthly Rate (EGP)</label>
+              <input type="number" id="training-morning-monthly" value="18000" min="0">
+            </div>
+          </div>
+          <div class="price-section">
+            <h3>Evening Rates</h3>
+            <div class="price-input-group">
+              <label>Hourly Rate (EGP)</label>
+              <input type="number" id="training-evening-hourly" value="120" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Daily Rate (EGP)</label>
+              <input type="number" id="training-evening-daily" value="900" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Monthly Rate (EGP)</label>
+              <input type="number" id="training-evening-monthly" value="20000" min="0">
+            </div>
+          </div>
+          <button class="btn-update" data-room="training">Update Prices</button>
+        </div>
+
+        <!-- Private Room -->
+        <div class="room-card">
+          <img src="room1.jpeg" alt="Private Room">
+          <h2>HORUS ROOM</h2>
+          <div class="price-section">
+            <h3>Morning Rates</h3>
+            <div class="price-input-group">
+              <label>Hourly Rate (EGP)</label>
+              <input type="number" id="private-morning-hourly" value="80" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Daily Rate (EGP)</label>
+              <input type="number" id="private-morning-daily" value="600" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Monthly Rate (EGP)</label>
+              <input type="number" id="private-morning-monthly" value="15000" min="0">
+            </div>
+          </div>
+          <div class="price-section">
+            <h3>Evening Rates</h3>
+            <div class="price-input-group">
+              <label>Hourly Rate (EGP)</label>
+              <input type="number" id="private-evening-hourly" value="100" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Daily Rate (EGP)</label>
+              <input type="number" id="private-evening-daily" value="750" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Monthly Rate (EGP)</label>
+              <input type="number" id="private-evening-monthly" value="18000" min="0">
+            </div>
+          </div>
+          <button class="btn-update" data-room="private">Update Prices</button>
+        </div>
+
+        <!-- Meeting Room -->
+        <div class="room-card">
+          <img src="rooom1.jpeg" alt="Meeting Room">
+          <h2>ISIS ROOM</h2>
+          <div class="price-section">
+            <h3>Morning Rates</h3>
+            <div class="price-input-group">
+              <label>Hourly Rate (EGP)</label>
+              <input type="number" id="meeting-morning-hourly" value="150" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Daily Rate (EGP)</label>
+              <input type="number" id="meeting-morning-daily" value="1200" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Monthly Rate (EGP)</label>
+              <input type="number" id="meeting-morning-monthly" value="25000" min="0">
+            </div>
+          </div>
+          <div class="price-section">
+            <h3>Evening Rates</h3>
+            <div class="price-input-group">
+              <label>Hourly Rate (EGP)</label>
+              <input type="number" id="meeting-evening-hourly" value="180" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Daily Rate (EGP)</label>
+              <input type="number" id="meeting-evening-daily" value="1400" min="0">
+            </div>
+            <div class="price-input-group">
+              <label>Monthly Rate (EGP)</label>
+              <input type="number" id="meeting-evening-monthly" value="30000" min="0">
+            </div>
+          </div>
+          <button class="btn-update" data-room="meeting">Update Prices</button>
+        </div>
+      </div>
+
+      <div class="bulk-actions">
+        <button id="save-all-btn" class="btn-save-all">Save All Changes</button>
+        <button id="reset-btn" class="btn-reset">Reset to Default</button>
+        <button id="export-btn" class="btn-export">Export Data</button>
+        <button id="import-btn" class="btn-import">Import Data</button>
+        <input type="file" id="import-file" accept=".json" style="display: none;">
+        <button id="export-btn" class="btn-export">Export Data</button>
+        <button id="import-btn" class="btn-import">Import Data</button>
+        <input type="file" id="import-file" accept=".json" style="display: none;">
+      </div>
+
+      <div id="success-message" class="success-message"></div>
+      
+      <div class="data-info">
+        <h3>Data Information</h3>
+        <div id="data-stats"></div>
+      </div>
+      
+      <div class="data-info">
+        <h3>Data Information</h3>
+        <div id="data-stats"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="admin-panel.js"></script>
+  <script src="admin-auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", Arial, sans-serif;
+}
+
+/* Layout */
+body {
+  background: #f4f6f9;
+  color: #333;
+}
+
+.admin-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header */
+.admin-header {
+  background: #1e3c72;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.admin-header .logo img {
+  height: 50px;
+}
+
+.admin-header .admin-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+#admin-welcome {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.btn-logout {
+  background: #ff4b5c;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.btn-logout:hover {
+  background: #ff1e38;
+}
+
+/* Main */
+.admin-main {
+  flex: 1;
+  padding: 40px;
+}
+
+.admin-main h1 {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: #1e3c72;
+}
+
+/* Rooms Grid */
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.room-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  overflow: hidden;
+  padding: 20px;
+  transition: transform 0.3s ease;
+}
+
+.room-card:hover {
+  transform: translateY(-5px);
+}
+
+.room-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.room-card h2 {
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #333;
+}
+
+/* Price Sections */
+.price-section {
+  background: #f9fafc;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.price-section h3 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  color: #1e3c72;
+}
+
+.price-input-group {
+  margin-bottom: 12px;
+}
+
+.price-input-group label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  color: #555;
+}
+
+.price-input-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  transition: 0.2s;
+}
+.price-input-group input:focus {
+  border-color: #1e3c72;
+  box-shadow: 0 0 6px rgba(30, 60, 114, 0.3);
+}
+
+/* Buttons */
+.btn-update {
+  width: 100%;
+  padding: 12px;
+  background: #1e3c72;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+.btn-update:hover {
+  background: #2a5298;
+}
+
+.bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.bulk-actions button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-save-all {
+  background: #28a745;
+  color: #fff;
+}
+.btn-save-all:hover {
+  background: #218838;
+}
+
+.btn-reset {
+  background: #ffc107;
+  color: #000;
+}
+.btn-reset:hover {
+  background: #e0a800;
+}
+
+.btn-export {
+  background: #007bff;
+  color: #fff;
+}
+.btn-export:hover {
+  background: #0069d9;
+}
+
+.btn-import {
+  background: #17a2b8;
+  color: #fff;
+}
+.btn-import:hover {
+  background: #138496;
+}
+
+/* Messages */
+.success-message {
+  margin-bottom: 20px;
+  color: #28a745;
+  font-weight: bold;
+}
+
+.data-info {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.data-info h3 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  color: #1e3c72;
+}
