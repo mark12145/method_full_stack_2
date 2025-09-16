@@ -57,6 +57,11 @@ body {
   background: #ff1e38;
 }
 
+.btn-logout:focus {
+  outline: 2px solid #ff4b5c;
+  outline-offset: 2px;
+}
+
 /* Main */
 .admin-main {
   flex: 1;
@@ -159,6 +164,12 @@ body {
   background: #2a5298;
 }
 
+.btn-update.loading {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 .bulk-actions {
   display: flex;
   flex-wrap: wrap;
@@ -209,9 +220,20 @@ body {
 
 /* Messages */
 .success-message {
+  display: none;
   margin-bottom: 20px;
-  color: #28a745;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
   font-weight: bold;
+  color: #155724;
+}
+
+.success-message.error {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
 }
 
 .data-info {
@@ -225,4 +247,33 @@ body {
   font-size: 1.2rem;
   margin-bottom: 12px;
   color: #1e3c72;
+}
+
+/* Dark Mode Enhancements */
+body.dark .success-message {
+  background: #1e3c2e;
+  border: 1px solid #2d5a3d;
+  color: #7fe08a;
+}
+
+body.dark .success-message.error {
+  background: #3c1e1e;
+  border: 1px solid #5a2d2d;
+  color: #ff8a8a;
+}
+
+body.dark .data-info {
+  background: #2b2b2b;
+  border: 1px solid #333;
+}
+
+body.dark .price-input-group input {
+  background: #1e1e1e;
+  color: #f1f1f1;
+  border: 1px solid #444;
+}
+
+body.dark .price-input-group input:focus {
+  border-color: #1e3c72;
+  box-shadow: 0 0 6px rgba(30, 60, 114, 0.5);
 }
