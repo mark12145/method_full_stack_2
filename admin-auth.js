@@ -83,7 +83,7 @@ class AdminAuth {
     // This is a simplified example - use proper authentication in production
     
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Hash the password for comparison (in real app, this would be done on server)
     const hashedPassword = await this.hashPassword(password);
@@ -91,7 +91,8 @@ class AdminAuth {
     // These should be environment variables or fetched from secure backend
     const validCredentials = {
       'admin': await this.hashPassword('12345'),
-      'methodsadmin': await this.hashPassword('SecurePass123!')
+      'methodsadmin': await this.hashPassword('SecurePass123!'),
+      'methods': await this.hashPassword('methods2025')
     };
 
     return validCredentials[username] === hashedPassword;

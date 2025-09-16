@@ -1,4 +1,4 @@
-// Enhanced Room Price Updater with Real-time Updates
+// Enhanced Room Price Updater with Instant Real-time Updates
 class RoomPriceUpdater {
   constructor(roomType) {
     this.roomType = roomType;
@@ -7,6 +7,7 @@ class RoomPriceUpdater {
     this.roomStorageKey = `${roomType}RoomPrices`;
     this.updateInterval = null;
     this.broadcastChannel = null;
+    this.isUpdating = false;
     this.init();
   }
 
@@ -19,21 +20,19 @@ class RoomPriceUpdater {
     // Set up event listeners
     this.setupEventListeners();
     
-    // Start periodic checking
-    this.startPeriodicCheck();
+    // Start rapid checking for updates
+    this.startRapidCheck();
     
-    // Initialize broadcast channel for modern browsers
+    // Initialize broadcast channel
     this.initBroadcastChannel();
   }
 
   setupEventListeners() {
     // Listen for storage changes (cross-tab updates)
     window.addEventListener('storage', (e) => {
-      if (e.key === this.roomStorageKey || 
-          e.key === this.storageKey || 
-          (e.key && e.key.startsWith(`priceUpdateTrigger_${this.roomType}`))) {
+      if (this.shouldHandleStorageEvent(e)) {
         console.log(`Storage change detected for ${this.roomType}:`, e.key);
-        this.updatePricesOnPage();
+        this.handleStorageUpdate(e);
       }
     });
     
@@ -48,7 +47,6 @@ class RoomPriceUpdater {
     // Listen for page visibility changes
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
-        // Page became visible, check for updates immediately
         console.log('Page became visible, checking for updates');
         this.checkForUpdates();
       }
@@ -59,6 +57,23 @@ class RoomPriceUpdater {
       console.log('Window focused, checking for updates');
       this.checkForUpdates();
     });
+  }
+
+  shouldHandleStorageEvent(e) {
+    return e.key === this.roomStorageKey || 
+           e.key === this.storageKey || 
+           (e.key && e.key.includes(`forceUpdate_${this.roomType}`)) ||
+           (e.key && e.key.includes('priceUpdateTrigger'));
+  }
+
+  handleStorageUpdate(e) {
+    if (this.isUpdating) return;
+    
+    this.isUpdating = true;
+    setTimeout(() => {
+      this.updatePricesOnPage();
+      this.isUpdating = false;
+    }, 50);
   }
 
   initBroadcastChannel() {
@@ -77,16 +92,18 @@ class RoomPriceUpdater {
     }
   }
 
-  startPeriodicCheck() {
-    // Check for updates every 1 second for faster response
+  startRapidCheck() {
+    // Check for updates every 500ms for instant response
     this.updateInterval = setInterval(() => {
       this.checkForUpdates();
-    }, 1000);
+    }, 500);
   }
 
   checkForUpdates() {
+    if (this.isUpdating) return;
+
     try {
-      // Check room-specific storage
+      // Check room-specific storage first
       const roomPriceData = localStorage.getItem(this.roomStorageKey);
       if (roomPriceData) {
         const data = JSON.parse(roomPriceData);
@@ -109,15 +126,17 @@ class RoomPriceUpdater {
         }
       }
 
-      // Check for trigger keys
-      const triggerKeys = Object.keys(localStorage).filter(key => 
-        key.startsWith(`priceUpdateTrigger_${this.roomType}`)
+      // Check for any trigger keys
+      const allKeys = Object.keys(localStorage);
+      const triggerKeys = allKeys.filter(key => 
+        key.includes('priceUpdateTrigger') || key.includes(`forceUpdate_${this.roomType}`)
       );
       
       if (triggerKeys.length > 0) {
         console.log(`Price update trigger found for ${this.roomType}`);
         this.updatePricesOnPage();
-        // Clean up old triggers
+        
+        // Update timestamp from triggers
         triggerKeys.forEach(key => {
           try {
             const triggerData = JSON.parse(localStorage.getItem(key));
@@ -135,6 +154,9 @@ class RoomPriceUpdater {
   }
 
   updatePricesFromEvent(eventData) {
+    if (this.isUpdating) return;
+    
+    this.isUpdating = true;
     try {
       const prices = eventData.prices;
       if (prices && prices.morning && prices.evening) {
@@ -150,10 +172,17 @@ class RoomPriceUpdater {
       }
     } catch (error) {
       console.error('Error updating prices from event:', error);
+    } finally {
+      setTimeout(() => {
+        this.isUpdating = false;
+      }, 100);
     }
   }
 
   updatePricesOnPage() {
+    if (this.isUpdating) return;
+    
+    this.isUpdating = true;
     try {
       let prices = null;
       
@@ -201,6 +230,10 @@ class RoomPriceUpdater {
       this.updateMorningPrices(defaultPrices.morning);
       this.updateEveningPrices(defaultPrices.evening);
       this.updateMainPrice(defaultPrices.morning.hourly);
+    } finally {
+      setTimeout(() => {
+        this.isUpdating = false;
+      }, 100);
     }
   }
 
@@ -263,7 +296,7 @@ class RoomPriceUpdater {
     // Update the main price display
     const priceElements = document.querySelectorAll('.price');
     priceElements.forEach(element => {
-      if (element) {
+      if (element && element.textContent.includes('EGP')) {
         element.textContent = `EGP ${this.formatPrice(hourlyPrice)} / hour`;
       }
     });
@@ -370,8 +403,6 @@ class RoomPriceUpdater {
     if (this.broadcastChannel) {
       this.broadcastChannel.close();
     }
-    window.removeEventListener('storage', this.handleStorageChange);
-    window.removeEventListener('priceUpdate', this.handlePriceUpdate);
   }
 }
 

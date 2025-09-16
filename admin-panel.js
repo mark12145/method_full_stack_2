@@ -2,7 +2,7 @@ class AdminPanel {
   constructor() {
     this.storageKey = 'methodsRoomPrices';
     this.backupKey = 'methodsRoomPricesBackup';
-    this.version = '2.1';
+    this.version = '2.2';
     this.priceData = this.loadPriceData();
     this.init();
   }
@@ -51,7 +51,7 @@ class AdminPanel {
     document.querySelectorAll('input[type="number"]').forEach(input => {
       input.addEventListener('input', this.debounce(() => {
         this.autoSave();
-      }, 2000));
+      }, 1500));
     });
   }
 
@@ -111,9 +111,59 @@ class AdminPanel {
     btn.classList.add('loading');
     btn.textContent = 'Updating...';
 
-    setTimeout(() => {
-      try {
-        // Collect all prices for this room
+    // Immediate update without delay
+    try {
+      // Collect all prices for this room
+      const roomPrices = {
+        morning: {
+          hourly: parseInt(document.getElementById(`${roomType}-morning-hourly`).value) || 0,
+          daily: parseInt(document.getElementById(`${roomType}-morning-daily`).value) || 0,
+          monthly: parseInt(document.getElementById(`${roomType}-morning-monthly`).value) || 0
+        },
+        evening: {
+          hourly: parseInt(document.getElementById(`${roomType}-evening-hourly`).value) || 0,
+          daily: parseInt(document.getElementById(`${roomType}-evening-daily`).value) || 0,
+          monthly: parseInt(document.getElementById(`${roomType}-evening-monthly`).value) || 0
+        }
+      };
+
+      // Validate prices
+      if (this.validatePrices(roomPrices)) {
+        // Update local data
+        this.priceData[roomType] = roomPrices;
+        
+        // Save to localStorage immediately
+        this.savePriceData();
+        
+        // Broadcast updates immediately with multiple methods
+        this.broadcastPriceUpdate(roomType, roomPrices);
+        
+        this.showSuccess(`${this.getRoomDisplayName(roomType)} prices updated successfully!`);
+        this.displayDataStats();
+      } else {
+        throw new Error('Invalid price values');
+      }
+    } catch (error) {
+      this.showError('Failed to update prices. Please check your values.');
+      console.error('Price update error:', error);
+    } finally {
+      btn.classList.remove('loading');
+      btn.textContent = 'Update Prices';
+    }
+  }
+
+  saveAllChanges() {
+    const saveBtn = document.getElementById('save-all-btn');
+    if (!saveBtn) return;
+
+    saveBtn.classList.add('loading');
+    saveBtn.textContent = 'Saving...';
+
+    try {
+      let hasChanges = false;
+
+      // Collect all current form values
+      Object.keys(this.priceData).forEach(roomType => {
         const roomPrices = {
           morning: {
             hourly: parseInt(document.getElementById(`${roomType}-morning-hourly`).value) || 0,
@@ -127,87 +177,30 @@ class AdminPanel {
           }
         };
 
-        // Validate prices
         if (this.validatePrices(roomPrices)) {
-          // Update local data
-          this.priceData[roomType] = roomPrices;
-          
-          // Save to localStorage with proper structure
-          this.savePriceData();
-          
-          // Update room pages immediately with enhanced broadcasting
-          this.updateRoomPages(roomType, roomPrices);
-          
-          // Enhanced cross-tab and real-time updates
-          this.broadcastPriceUpdate(roomType, roomPrices);
-          
-          this.showSuccess(`${this.getRoomDisplayName(roomType)} prices updated successfully!`);
-          this.displayDataStats();
-        } else {
-          throw new Error('Invalid price values');
-        }
-      } catch (error) {
-        this.showError('Failed to update prices. Please check your values.');
-        console.error('Price update error:', error);
-      } finally {
-        btn.classList.remove('loading');
-        btn.textContent = 'Update Prices';
-      }
-    }, 500); // Reduced delay for faster updates
-  }
-
-  saveAllChanges() {
-    const saveBtn = document.getElementById('save-all-btn');
-    if (!saveBtn) return;
-
-    saveBtn.classList.add('loading');
-    saveBtn.textContent = 'Saving...';
-
-    setTimeout(() => {
-      try {
-        let hasChanges = false;
-
-        // Collect all current form values
-        Object.keys(this.priceData).forEach(roomType => {
-          const roomPrices = {
-            morning: {
-              hourly: parseInt(document.getElementById(`${roomType}-morning-hourly`).value) || 0,
-              daily: parseInt(document.getElementById(`${roomType}-morning-daily`).value) || 0,
-              monthly: parseInt(document.getElementById(`${roomType}-morning-monthly`).value) || 0
-            },
-            evening: {
-              hourly: parseInt(document.getElementById(`${roomType}-evening-hourly`).value) || 0,
-              daily: parseInt(document.getElementById(`${roomType}-evening-daily`).value) || 0,
-              monthly: parseInt(document.getElementById(`${roomType}-evening-monthly`).value) || 0
-            }
-          };
-
-          if (this.validatePrices(roomPrices)) {
-            // Check if prices actually changed
-            if (JSON.stringify(this.priceData[roomType]) !== JSON.stringify(roomPrices)) {
-              this.priceData[roomType] = roomPrices;
-              this.updateRoomPages(roomType, roomPrices);
-              this.broadcastPriceUpdate(roomType, roomPrices);
-              hasChanges = true;
-            }
+          // Check if prices actually changed
+          if (JSON.stringify(this.priceData[roomType]) !== JSON.stringify(roomPrices)) {
+            this.priceData[roomType] = roomPrices;
+            this.broadcastPriceUpdate(roomType, roomPrices);
+            hasChanges = true;
           }
-        });
-
-        if (hasChanges) {
-          this.savePriceData();
-          this.showSuccess('All room prices updated successfully!');
-          this.displayDataStats();
-        } else {
-          this.showSuccess('No changes detected.');
         }
-      } catch (error) {
-        this.showError('Failed to save all changes.');
-        console.error('Bulk save error:', error);
-      } finally {
-        saveBtn.classList.remove('loading');
-        saveBtn.textContent = 'Save All Changes';
+      });
+
+      if (hasChanges) {
+        this.savePriceData();
+        this.showSuccess('All room prices updated successfully!');
+        this.displayDataStats();
+      } else {
+        this.showSuccess('No changes detected.');
       }
-    }, 800);
+    } catch (error) {
+      this.showError('Failed to save all changes.');
+      console.error('Bulk save error:', error);
+    } finally {
+      saveBtn.classList.remove('loading');
+      saveBtn.textContent = 'Save All Changes';
+    }
   }
 
   resetToDefaults() {
@@ -221,9 +214,8 @@ class AdminPanel {
       // Save to storage
       this.savePriceData();
       
-      // Update all room pages with enhanced broadcasting
+      // Update all room pages
       Object.keys(this.priceData).forEach(roomType => {
-        this.updateRoomPages(roomType, this.priceData[roomType]);
         this.broadcastPriceUpdate(roomType, this.priceData[roomType]);
       });
 
@@ -247,11 +239,12 @@ class AdminPanel {
 
   savePriceData() {
     try {
+      const timestamp = Date.now();
       const dataToSave = {
         prices: this.priceData,
         version: this.version,
         lastUpdated: new Date().toISOString(),
-        timestamp: Date.now(),
+        timestamp: timestamp,
         updatedBy: this.getAdminUsername()
       };
 
@@ -263,7 +256,7 @@ class AdminPanel {
         const roomData = {
           ...this.priceData[roomType],
           lastUpdated: dataToSave.lastUpdated,
-          timestamp: dataToSave.timestamp,
+          timestamp: timestamp,
           roomType: roomType,
           updatedBy: dataToSave.updatedBy
         };
@@ -280,19 +273,6 @@ class AdminPanel {
     }
   }
 
-  updateRoomPages(roomType, roomPrices) {
-    // Store individual room data with timestamp
-    const roomPageData = {
-      ...roomPrices,
-      lastUpdated: new Date().toISOString(),
-      timestamp: Date.now(),
-      roomType: roomType,
-      updatedBy: this.getAdminUsername()
-    };
-
-    localStorage.setItem(`${roomType}RoomPrices`, JSON.stringify(roomPageData));
-  }
-
   broadcastPriceUpdate(roomType, roomPrices) {
     const timestamp = Date.now();
     const updateData = {
@@ -304,46 +284,48 @@ class AdminPanel {
       updatedBy: this.getAdminUsername()
     };
 
-    // 1. Create custom event for same-window updates
+    console.log(`Broadcasting price update for ${roomType}:`, updateData);
+
+    // Method 1: Custom event for same-window updates
     const updateEvent = new CustomEvent('priceUpdate', {
       detail: updateData
     });
     window.dispatchEvent(updateEvent);
 
-    // 2. Force storage event for cross-tab communication
+    // Method 2: Direct localStorage update with forced event
     const storageData = {
       ...roomPrices,
       ...updateData
     };
-
+    
     // Clear and set to trigger storage event
     localStorage.removeItem(`${roomType}RoomPrices`);
-    setTimeout(() => {
-      localStorage.setItem(`${roomType}RoomPrices`, JSON.stringify(storageData));
-    }, 50);
+    localStorage.setItem(`${roomType}RoomPrices`, JSON.stringify(storageData));
 
-    // 3. Additional broadcast channel for modern browsers
+    // Method 3: BroadcastChannel for modern browsers
     if ('BroadcastChannel' in window) {
       try {
         const channel = new BroadcastChannel('methodsPriceUpdates');
         channel.postMessage(updateData);
-        channel.close();
+        setTimeout(() => channel.close(), 100);
       } catch (error) {
         console.warn('BroadcastChannel not available:', error);
       }
     }
 
-    // 4. Enhanced localStorage trigger
+    // Method 4: Multiple storage triggers for maximum compatibility
     setTimeout(() => {
-      const triggerKey = `priceUpdateTrigger_${roomType}_${timestamp}`;
+      const triggerKey = `priceUpdateTrigger_${timestamp}`;
       localStorage.setItem(triggerKey, JSON.stringify(updateData));
-      // Clean up trigger after 5 seconds
-      setTimeout(() => {
-        localStorage.removeItem(triggerKey);
-      }, 5000);
-    }, 100);
+      setTimeout(() => localStorage.removeItem(triggerKey), 3000);
+    }, 50);
 
-    console.log(`Price update broadcasted for ${roomType}:`, updateData);
+    // Method 5: Force storage event by manipulating a trigger key
+    const forceKey = `forceUpdate_${roomType}`;
+    localStorage.removeItem(forceKey);
+    setTimeout(() => {
+      localStorage.setItem(forceKey, JSON.stringify(updateData));
+    }, 100);
   }
 
   autoSave() {
@@ -377,9 +359,8 @@ class AdminPanel {
         this.priceData = newPriceData;
         this.savePriceData();
         
-        // Update room pages with enhanced broadcasting
+        // Broadcast updates for all changed rooms
         Object.keys(this.priceData).forEach(roomType => {
-          this.updateRoomPages(roomType, this.priceData[roomType]);
           this.broadcastPriceUpdate(roomType, this.priceData[roomType]);
         });
       }
@@ -449,9 +430,8 @@ class AdminPanel {
             this.loadCurrentPrices();
             this.savePriceData();
             
-            // Update all room pages with enhanced broadcasting
+            // Update all room pages
             Object.keys(this.priceData).forEach(roomType => {
-              this.updateRoomPages(roomType, this.priceData[roomType]);
               this.broadcastPriceUpdate(roomType, this.priceData[roomType]);
             });
             
@@ -538,7 +518,7 @@ class AdminPanel {
     if (successElement) {
       successElement.textContent = message;
       successElement.style.display = 'block';
-      successElement.style.color = '#28a745';
+      successElement.className = 'success-message';
       setTimeout(() => {
         successElement.style.display = 'none';
       }, 5000);
@@ -550,7 +530,7 @@ class AdminPanel {
     if (successElement) {
       successElement.textContent = message;
       successElement.style.display = 'block';
-      successElement.style.color = '#dc3545';
+      successElement.className = 'success-message error';
       setTimeout(() => {
         successElement.style.display = 'none';
       }, 5000);
